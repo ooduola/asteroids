@@ -10,9 +10,9 @@ import org.http4s.Uri
 import service.Transformer.transformResponse
 
 trait AsteroidService[F[_]] {
-  def fetchAsteroidsWithDates(startDate: String, endDate: String): F[Either[Error, List[Asteroid]]]
+  def fetchAsteroidsWithDates(startDate: String, endDate: String): F[Either[Error, List[AsteroidSummary]]]
 
-  def fetchAsteroids(): F[Either[Error, List[Asteroid]]]
+  def fetchAsteroids(): F[Either[Error, List[AsteroidSummary]]]
 
   def fetchAsteroidDetail(id: String): F[Either[Error, AsteroidDetail]]
 
@@ -21,13 +21,13 @@ trait AsteroidService[F[_]] {
 
 class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
                                              config: ApiConfig,
-                                             cache: Cache[(Option[String], Option[String]), List[Asteroid]]) extends AsteroidService[F] {
+                                             cache: Cache[(Option[String], Option[String]), NasaResponse]) extends AsteroidService[F] {
   private val baseUrl = config.baseUrl
 
-  override def fetchAsteroidsWithDates(startDate: String, endDate: String): F[Either[Error, List[Asteroid]]] =
+  override def fetchAsteroidsWithDates(startDate: String, endDate: String): F[Either[Error, List[AsteroidSummary]]] =
     fetchFromCacheOrApi(startDate.some, endDate.some)
 
-  override def fetchAsteroids(): F[Either[Error, List[Asteroid]]] =
+  override def fetchAsteroids(): F[Either[Error, List[AsteroidSummary]]] =
     fetchFromCacheOrApi(None, None)
 
   override def fetchAsteroidDetail(id: String): F[Either[Error, AsteroidDetail]] = {
@@ -43,16 +43,19 @@ class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
     sortedAsteroids.pure[F]
   }
 
-  private def fetchFromCacheOrApi(startDateOpt: Option[String], endDateOpt: Option[String]): F[Either[Error, List[Asteroid]]] = {
+  private def fetchFromCacheOrApi(startDateOpt: Option[String], endDateOpt: Option[String]): F[Either[Error, List[AsteroidSummary]]] = {
     val key = (startDateOpt, endDateOpt)
 
     Option(cache.getIfPresent(key)) match {
-      case Some(asteroidsList) => Concurrent[F].pure(Right(asteroidsList))
+      case Some(nasaResponse) =>
+        val asteroidSummaryList = transformResponse(nasaResponse)
+        Concurrent[F].pure(Right(asteroidSummaryList))
       case _ =>
         fetchAsteroidsFromApi(startDateOpt, endDateOpt).flatMap {
-          case Right(asteroidsList) =>
-            cache.put(key, asteroidsList)
-            Concurrent[F].pure(Right(asteroidsList))
+          case Right(nasaResponse) =>
+            cache.put(key, nasaResponse)
+            val asteroidSummaryList = transformResponse(nasaResponse)
+            Concurrent[F].pure(Right(asteroidSummaryList))
           case Left(error) => Concurrent[F].pure(Left(error))
         }
     }
@@ -68,10 +71,10 @@ class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
     Uri.unsafeFromString(s"$urlStr")
   }
 
-  private def fetchAsteroidsFromApi(startDateOpt: Option[String], endDateOpt: Option[String]): F[Either[Error, List[Asteroid]]] = {
+  private def fetchAsteroidsFromApi(startDateOpt: Option[String], endDateOpt: Option[String]): F[Either[Error, NasaResponse]] = {
     val url = constructAsteroidsUrl(startDateOpt, endDateOpt)
     client.getAsteroids(url).map {
-      case Right(resp) => Right(transformResponse(resp))
+      case Right(resp) => Right(resp)
       case Left(error) => Left(error)
     }
   }

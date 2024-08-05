@@ -9,14 +9,19 @@ import io.circe.generic.semiauto._
 trait AsteroidBase {
   def links: DetailLink
   def id: String
-  def neoReferenceId: String
   def name: String
-  def nasaJplUrl: String
-  def absoluteMagnitudeH: Double
-  def estimatedDiameter: EstimatedDiameter
-  def isPotentiallyHazardousAsteroid: Boolean
-  def closeApproachData: List[CloseApproachData]
-  def isSentryObject: Boolean
+}
+
+case class AsteroidSummary(
+                            id: String,
+                            name: String,
+                            links: DetailLink
+                          ) extends AsteroidBase
+
+object AsteroidSummary {
+  implicit val asteroidSummaryEncoder: Encoder[AsteroidSummary] = deriveEncoder
+  implicit private def config: Configuration = Configuration.default.withSnakeCaseMemberNames
+  implicit val asteroidSummaryCodec: Codec.AsObject[AsteroidSummary] = deriveConfiguredCodec
 }
 
 case class Asteroid(

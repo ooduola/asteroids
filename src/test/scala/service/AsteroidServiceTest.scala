@@ -5,7 +5,7 @@ import cats.effect.unsafe.implicits.global
 import com.github.benmanes.caffeine.cache.Cache
 import config._
 import model._
-import model.nasa.Asteroid
+import model.nasa.{Asteroid, AsteroidSummary, NasaResponse}
 import org.http4s.Uri
 import org.mockito.ArgumentMatchersSugar.{any, eq}
 import org.mockito.{ArgumentMatchers, Mockito, MockitoSugar}
@@ -18,7 +18,7 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
 
   val mockClient: ApiClientImpl[IO] = mock[ApiClientImpl[IO]]
   val mockConfig: ApiConfig = ApiConfig("MOCK_KEY", "https://.mock.gov", "/list", "/detail/")
-  val mockCache: Cache[(Option[String], Option[String]), List[Asteroid]] = mock[Cache[(Option[String], Option[String]), List[Asteroid]]]
+  val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
 
   val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig, mockCache)
 
@@ -41,7 +41,7 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
         s"$baseUrl$listPath?start_date=2024-01-01&end_date=2024-01-31&api_key=${mockConfig.apiKey}"
       )
 
-    result shouldBe Right(asteroidList)
+    result shouldBe Right(asteroidSummaryList)
     verify(mockClient).getAsteroids(ArgumentMatchers.eq(expectedUri))
 }
 
@@ -51,7 +51,7 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
     val result = asteroidService.fetchAsteroids().unsafeRunSync()
     val expectedUri: Uri = Uri.unsafeFromString(s"$baseUrl$listPath?api_key=${mockConfig.apiKey}")
 
-    result shouldBe Right(List(asteroid))
+    result shouldBe Right(List(asteroidSummary))
     verify(mockClient).getAsteroids(ArgumentMatchers.eq(expectedUri))
   }
 

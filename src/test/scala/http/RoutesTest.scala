@@ -30,11 +30,11 @@ class RoutesTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
 
   test("GET /asteroids returns status 200 and list of asteroids") {
     when(mockAsteroidService.fetchAsteroids())
-      .thenReturn(IO.pure(Right(List(asteroid))))
+      .thenReturn(IO.pure(Right(List(asteroidSummary))))
 
     val request = Request[IO](Method.GET, uri"/asteroids")
     val response = routes.run(request).unsafeRunSync
-    val responseBody = response.as[List[Asteroid]].unsafeRunSync()
+    val responseBody = response.as[List[AsteroidSummary]].unsafeRunSync()
 
     response.status shouldBe Status.Ok
     responseBody.length shouldBe 1
@@ -46,11 +46,11 @@ class RoutesTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
     when(mockAsteroidService.fetchAsteroidsWithDates(
       argThat(new DateFormatMatcher("yyyy-MM-dd")),
       argThat(new DateFormatMatcher("yyyy-MM-dd"))
-    )).thenReturn(IO.pure(Right(asteroidList)))
+    )).thenReturn(IO.pure(Right(asteroidSummaryList)))
 
     val request = Request[IO](Method.GET, uri"/asteroids/2023-01-01/2023-01-02")
     val response = routes.run(request).unsafeRunSync
-    val responseBody = response.as[List[Asteroid]].unsafeRunSync()
+    val responseBody = response.as[List[AsteroidSummary]].unsafeRunSync()
 
     response.status shouldBe Status.Ok
     responseBody.length shouldBe asteroidList.length

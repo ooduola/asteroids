@@ -5,7 +5,7 @@ import com.comcast.ip4s._
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import config.{AppConfig, ConfigLoader}
 import http.Routes
-import model.nasa.Asteroid
+import model.nasa._
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
@@ -28,10 +28,10 @@ object Main extends IOApp {
     HttpClient.clientResource[IO].use { httpClient =>
       implicit val client: Client[IO] = httpClient
 
-      implicit val cache: Cache[(Option[String], Option[String]), List[Asteroid]] =
+      implicit val cache: Cache[(Option[String], Option[String]), NasaResponse] =
         Caffeine.newBuilder()
           .maximumSize(100)
-          .build[(Option[String], Option[String]), List[Asteroid]]()
+          .build[(Option[String], Option[String]), NasaResponse]()
 
       loadConfig.flatMap { config =>
         val asteroidService = buildServices(config)
@@ -51,7 +51,7 @@ object Main extends IOApp {
   }
 
   private def buildServices(cfg: AppConfig)(implicit client: Client[IO],
-                                            cache: Cache[(Option[String], Option[String]), List[Asteroid]]): AsteroidServiceImpl[IO] = {
+                                            cache: Cache[(Option[String], Option[String]), NasaResponse]): AsteroidServiceImpl[IO] = {
     val nasaClient = new ApiClientImpl[IO](client)
     new AsteroidServiceImpl[IO](nasaClient, cfg.api, cache)
   }
