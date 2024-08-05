@@ -1,0 +1,111 @@
+package model.nasa
+
+import io.circe._
+
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import io.circe.generic.extras._
+import io.circe.generic.extras.semiauto._
+import cats.syntax.either._
+import io.circe.Decoder.Result
+
+case class NasaResponse(
+                         elementCount: Int,
+                         nearEarthObjects: Map[LocalDate, List[Asteroid]]
+                       )
+
+object NasaResponse {
+  import model.nasa.Asteroid._
+
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+  implicit val dateEncoder: Encoder[LocalDate] = Encoder.encodeString.contramap(_.format(dateFormatter))
+
+  implicit val dateDecoder: Decoder[LocalDate] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(LocalDate.parse(str, dateFormatter)).leftMap(_.getMessage)
+    }
+
+  // Custom decoder for Map[LocalDate, List[Asteroid]]
+  implicit val mapDecoder: Decoder[Map[LocalDate, List[Asteroid]]] = new Decoder[Map[LocalDate, List[Asteroid]]] {
+    final def apply(c: HCursor): Decoder.Result[Map[LocalDate, List[Asteroid]]] =
+      c.keys match {
+        case Some(keys) =>
+          val result = keys.toList.foldLeft[Decoder.Result[Map[LocalDate, List[Asteroid]]]](Right(Map.empty)) {
+            case (Right(acc), key) =>
+              c.downField(key).as[List[Asteroid]].map { value =>
+                acc + (LocalDate.parse(key, dateFormatter) -> value)
+              }
+            case (left @ Left(_), _) => left
+          }
+          result
+        case None => Right(Map.empty)
+      }
+  }
+
+  implicit val customConfiguration: Configuration = Configuration.default.withSnakeCaseMemberNames
+
+  implicit val nasaResponseCodec: Codec.AsObject[NasaResponse] = new Codec.AsObject[NasaResponse] {
+    def encodeObject(a: NasaResponse): JsonObject = JsonObject.fromMap(Map(
+      "element_count" -> Json.fromInt(a.elementCount),
+      "near_earth_objects" -> Json.fromFields(
+        a.nearEarthObjects.map {
+          case (date, asteroids) =>
+            date.format(dateFormatter) -> Json.fromValues(asteroids.map(_.asJson))
+        }
+      )
+    ))
+
+    override def apply(c: HCursor): Decoder.Result[NasaResponse] = for {
+      elementCount <- c.downField("element_count").as[Int]
+      nearEarthObjects <- c.downField("near_earth_objects").as[Map[LocalDate, List[Asteroid]]]
+    } yield NasaResponse(elementCount, nearEarthObjects)
+
+  }
+}
+
+
+//import io.circe._
+//import java.time.LocalDate
+//import java.time.format.DateTimeFormatter
+//import io.circe.generic.extras.Configuration
+//import io.circe.generic.extras.semiauto.deriveConfiguredCodec
+//import cats.syntax.either._
+//
+//case class NasaResponse(
+//                         elementCount: Int,
+//                         nearEarthObjects: Map[LocalDate, List[Asteroid]]
+//                       )
+//
+//object NasaResponse {
+//
+//  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+//
+//  implicit val dateEncoder: Encoder[LocalDate] = Encoder.encodeString.contramap[LocalDate](_.format(dateFormatter))
+//
+//  implicit val dateDecoder: Decoder[LocalDate] =
+//    Decoder.decodeString.emap[LocalDate] { str =>
+//      Either.catchNonFatal(LocalDate.parse(str, dateFormatter)).leftMap(_.getMessage)
+//    }
+//
+//  // Custom decoder for Map[LocalDate, List[Asteroid]]
+//  implicit val mapDecoder: Decoder[Map[LocalDate, List[Asteroid]]] = new Decoder[Map[LocalDate, List[Asteroid]]] {
+//    final def apply(c: HCursor): Decoder.Result[Map[LocalDate, List[Asteroid]]] =
+//      c.keys match {
+//        case Some(keys) =>
+//          val result = keys.toList.foldLeft[Decoder.Result[Map[LocalDate, List[Asteroid]]]](Right(Map.empty)) {
+//            case (Right(acc), key) =>
+//              c.downField(key).as[List[Asteroid]].map { value =>
+//                acc + (LocalDate.parse(key, DateTimeFormatter.ISO_LOCAL_DATE) -> value)
+//              }
+//            case (left @ Left(_), _) => left
+//          }
+//          result
+//        case None => Right(Map.empty)
+//      }
+//  }
+//
+//  implicit val customConfiguration: Configuration = Configuration.default.withSnakeCaseMemberNames
+//  implicit val nasaResponseCodec: Codec.AsObject[NasaResponse] = deriveConfiguredCodec
+//
+//}
