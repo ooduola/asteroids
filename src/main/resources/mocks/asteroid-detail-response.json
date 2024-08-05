@@ -1,0 +1,79 @@
+{
+  "links" : {
+    "self" : "http://example.com/neo/1/detail"
+  },
+  "id" : "1",
+  "neo_reference_id" : "1",
+  "name" : "Test Asteroid Detail",
+  "designation" : "2021 AB",
+  "nasa_jpl_url" : "http://example.com/neo/1",
+  "absolute_magnitude_h" : 10.0,
+  "estimated_diameter" : {
+    "kilometers" : {
+      "estimated_diameter_min" : 1.0,
+      "estimated_diameter_max" : 2.0
+    },
+    "meters" : {
+      "estimated_diameter_min" : 1000.0,
+      "estimated_diameter_max" : 2000.0
+    },
+    "miles" : {
+      "estimated_diameter_min" : 0.6,
+      "estimated_diameter_max" : 1.2
+    },
+    "feet" : {
+      "estimated_diameter_min" : 3.3,
+      "estimated_diameter_max" : 6.6
+    }
+  },
+  "is_potentially_hazardous_asteroid" : false,
+  "close_approach_data" : [
+    {
+      "close_approach_date" : "2024-08-04",
+      "close_approach_date_full" : "2024-Aug-04 14:00 UT",
+      "epoch_date_close_approach" : 1710480000000,
+      "relative_velocity" : {
+        "kilometers_per_second" : "12.34",
+        "kilometers_per_hour" : "44500",
+        "miles_per_hour" : "27600"
+      },
+      "miss_distance" : {
+        "astronomical" : "0.012",
+        "lunar" : "4.6",
+        "kilometers" : "12000",
+        "miles" : "7500"
+      },
+      "orbiting_body" : "Earth"
+    }
+  ],
+  "orbital_data" : {
+    "orbit_id" : "1",
+    "orbit_determination_date" : "2024-07-15T00:00:00Z",
+    "first_observation_date" : "2024-01-01",
+    "last_observation_date" : "2024-08-03",
+    "data_arc_in_days" : 200,
+    "observations_used" : 50,
+    "orbit_uncertainty" : "0.1",
+    "minimum_orbit_intersection" : "0.01",
+    "jupiter_tisserand_invariant" : "3.5",
+    "epoch_osculation" : "2024-08-01",
+    "eccentricity" : "0.1",
+    "semi_major_axis" : "1.2",
+    "inclination" : "10.0",
+    "ascending_node_longitude" : "100.0",
+    "orbital_period" : "365.25",
+    "perihelion_distance" : "0.9",
+    "perihelion_argument" : "0.5",
+    "aphelion_distance" : "1.5",
+    "perihelion_time" : "2024-07-20",
+    "mean_anomaly" : "0.7",
+    "mean_motion" : "0.1",
+    "equinox" : "J2000",
+    "orbit_class" : {
+      "orbit_class_type" : "Near-Earth",
+      "orbit_class_description" : "Near-Earth orbit class",
+      "orbit_class_range" : "0.1 - 1.0 AU"
+    }
+  },
+  "is_sentry_object" : false
+}

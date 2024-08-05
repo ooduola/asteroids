@@ -2,6 +2,8 @@ package utils
 
 import model.nasa._
 
+import java.time.LocalDate
+
 object TestData {
 
   val asteroid: Asteroid = Asteroid(
@@ -79,27 +81,27 @@ object TestData {
   val asteroidDetail: AsteroidDetail = AsteroidDetail(
     links = DetailLink("http://example.com/neo/1/detail"),
     id = "1",
-    neoReferenceId = "1",  // Updated field name
+    neoReferenceId = "1",  
     name = "Test Asteroid Detail",
     designation = "2021 AB",
-    nasaJplUrl = "http://example.com/neo/1",  // Updated field name
-    absoluteMagnitudeH = 10.0,  // Updated field name
+    nasaJplUrl = "http://example.com/neo/1",  
+    absoluteMagnitudeH = 10.0,  
     estimatedDiameter = EstimatedDiameter(
       kilometers = Diameter(1.0, 2.0),
       meters = Diameter(1000, 2000),
       miles = Diameter(0.6, 1.2),
       feet = Diameter(3.3, 6.6)
     ),
-    isPotentiallyHazardousAsteroid = false,  // Updated field name
+    isPotentiallyHazardousAsteroid = false,  
     closeApproachData = List(
       CloseApproachData(
-        closeApproachDate = "2024-08-04",  // Updated field name
-        closeApproachDateFull = "2024-Aug-04 14:00 UT",  // Updated field name
-        epochDateCloseApproach = 1710480000000L,  // Updated field name
+        closeApproachDate = "2024-08-04",  
+        closeApproachDateFull = "2024-Aug-04 14:00 UT",  
+        epochDateCloseApproach = 1710480000000L,  
         relativeVelocity = RelativeVelocity(
-          kilometersPerSecond = "12.34",  // Updated field name
-          kilometersPerHour = "44500",  // Updated field name
-          milesPerHour = "27600"  // Updated field name
+          kilometersPerSecond = "12.34",  
+          kilometersPerHour = "44500",  
+          milesPerHour = "27600"  
         ),
         missDistance = MissDistance(
           astronomical = "0.012",
@@ -107,49 +109,51 @@ object TestData {
           kilometers = "12000",
           miles = "7500"
         ),
-        orbitingBody = "Earth"  // Updated field name
+        orbitingBody = "Earth"  
       )
     ),
     orbitalData = OrbitalData(
-      orbitId = "1",  // Updated field name
-      orbitDeterminationDate = "2024-07-15T00:00:00Z",  // Updated field name
-      firstObservationDate = "2024-01-01",  // Updated field name
-      lastObservationDate = "2024-08-03",  // Updated field name
+      orbitId = "1",  
+      orbitDeterminationDate = "2024-07-15T00:00:00Z",  
+      firstObservationDate = "2024-01-01",  
+      lastObservationDate = "2024-08-03",  
       dataArcInDays = 200,
-      observationsUsed = 50,  // Updated field name
-      orbitUncertainty = "0.1",  // Updated field name
-      minimumOrbitIntersection = "0.01",  // Updated field name
-      jupiterTisserandInvariant = "3.5",  // Updated field name
-      epochOsculation = "2024-08-01",  // Updated field name
+      observationsUsed = 50,  
+      orbitUncertainty = "0.1",  
+      minimumOrbitIntersection = "0.01",  
+      jupiterTisserandInvariant = "3.5",  
+      epochOsculation = "2024-08-01",  
       eccentricity = "0.1",
-      semiMajorAxis = "1.2",  // Updated field name
+      semiMajorAxis = "1.2",  
       inclination = "10.0",
-      ascendingNodeLongitude = "100.0",  // Updated field name
-      orbitalPeriod = "365.25",  // Updated field name
-      perihelionDistance = "0.9",  // Updated field name
-      perihelionArgument = "0.5",  // Updated field name
-      aphelionDistance = "1.5",  // Updated field name
-      perihelionTime = "2024-07-20",  // Updated field name
-      meanAnomaly = "0.7",  // Updated field name
-      meanMotion = "0.1",  // Updated field name
+      ascendingNodeLongitude = "100.0",  
+      orbitalPeriod = "365.25",  
+      perihelionDistance = "0.9",  
+      perihelionArgument = "0.5",  
+      aphelionDistance = "1.5",  
+      perihelionTime = "2024-07-20",  
+      meanAnomaly = "0.7",  
+      meanMotion = "0.1",  
       equinox = "J2000",
       orbitClass = OrbitClass(
-        orbitClassType = "Near-Earth",  // Updated field name
-        orbitClassDescription = "Near-Earth orbit class",  // Updated field name
-        orbitClassRange = "0.1 - 1.0 AU"  // Updated field name
+        orbitClassType = "Near-Earth",  
+        orbitClassDescription = "Near-Earth orbit class",  
+        orbitClassRange = "0.1 - 1.0 AU"  
       )
     ),
-    isSentryObject = false  // Updated field name
+    isSentryObject = false  
   )
+
+  val date: LocalDate = LocalDate.parse("2024-08-04")
 
   val nasaResponse: NasaResponse = NasaResponse(
     elementCount = 1,
-    nearEarthObjects = Map("2024-08-04" -> asteroidList)
+    nearEarthObjects = Map(date -> asteroidList)
   )
 
   val nasaResponseTwo: NasaResponse = NasaResponse(
     elementCount = 1,
-    nearEarthObjects = Map("2024-08-04" -> List(asteroid))
+    nearEarthObjects = Map(date -> List(asteroid))
   )
 
 }

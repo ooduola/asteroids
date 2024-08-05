@@ -2,6 +2,7 @@ package model.nasa
 
 import io.circe._
 import io.circe.generic.extras.Configuration
+import io.circe.generic.extras.semiauto.deriveConfiguredCodec
 import io.circe.generic.semiauto._
 
 
@@ -35,8 +36,7 @@ case class Asteroid(
 object Asteroid {
   implicit val asteroidEncoder: Encoder[Asteroid] = deriveEncoder
   implicit private def config: Configuration = Configuration.default.withSnakeCaseMemberNames
-
-  implicit val asteroidCodec: Codec.AsObject[Asteroid] = deriveCodec
+  implicit val asteroidCodec: Codec.AsObject[Asteroid] = deriveConfiguredCodec
 }
 
 case class AsteroidDetail(
@@ -56,6 +56,6 @@ case class AsteroidDetail(
 
 object AsteroidDetail {
   implicit private def config: Configuration = Configuration.default.withSnakeCaseMemberNames
-  implicit val asteroidDetailCodec: Codec.AsObject[AsteroidDetail] = deriveCodec
+  implicit val asteroidDetailCodec: Codec.AsObject[AsteroidDetail] = deriveConfiguredCodec
 }
 

@@ -16,7 +16,7 @@ class CodecTest extends AnyFunSuite with Matchers {
   test("Decode: Nasa response") {
     val response = readResourceAsString("/mocks/nasa-response.json")
     val result = decode[NasaResponse](response)
-    println(result)
+
     result shouldBe Right(nasaResponse)
   }
 
