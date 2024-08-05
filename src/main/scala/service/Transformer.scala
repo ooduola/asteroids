@@ -1,6 +1,6 @@
 package service
 
-import model.nasa.{AsteroidSummary, NasaResponse}
+import model.api.{AsteroidSummary, NasaResponse}
 
 object Transformer {
 

@@ -6,7 +6,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import config._
 import model.SortBy.Name
 import model._
-import model.nasa.{Asteroid, AsteroidSummary, NasaResponse}
+import model.api.{Asteroid, AsteroidSummary, NasaResponse}
 import org.http4s.Uri
 import org.mockito.ArgumentMatchersSugar.{any, eq}
 import org.mockito.{ArgumentMatchers, Mockito, MockitoSugar}

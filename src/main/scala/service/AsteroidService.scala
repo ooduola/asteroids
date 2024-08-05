@@ -6,7 +6,7 @@ import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import config.{ApiConfig, AppConfig}
 import model.SortBy.Name
 import model._
-import model.nasa._
+import model.api._
 import org.http4s.Uri
 import service.Transformer.transformResponse
 

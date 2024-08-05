@@ -9,8 +9,8 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import model.{Error, SortBy}
 import model.SortBy.Name
-import model.nasa._
-import model.nasa.AsteroidSummary.asteroidSummaryCodec
+import model.api._
+import model.api.AsteroidSummary.asteroidSummaryCodec
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import service.AsteroidService
 import utils.DateUtils._

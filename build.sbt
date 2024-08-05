@@ -24,6 +24,8 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-core" % "1.0.0-RC2",
       "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2",
       "org.tpolecat" %% "doobie-postgres" % "1.0.0-RC2",
+      "org.tpolecat" %% "doobie-specs2" % "1.0.0-RC2",
+      "org.postgresql" % "postgresql" % "42.7.3",
 
       // Logging Libraries
       "org.typelevel" %% "log4cats-slf4j" % "2.7.0",

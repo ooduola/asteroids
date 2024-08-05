@@ -1,6 +1,6 @@
 package utils
 
-import model.nasa._
+import model.api._
 
 import java.time.LocalDate
 

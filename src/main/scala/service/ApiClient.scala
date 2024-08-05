@@ -8,7 +8,7 @@ import io.circe.{Decoder, DecodingFailure}
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import model._
-import model.nasa._
+import model.api._
 import org.http4s.Method.GET
 
 trait ApiClient[F[_]] {

@@ -5,8 +5,8 @@ import cats.effect.{IO, Resource}
 import cats.implicits._
 import config.{ApiConfig, AppConfig}
 import model.{HttpError, ParsingError}
-import model.nasa.NasaResponse
-import model.nasa.NasaResponse.nasaResponseCodec
+import model.api.NasaResponse
+import model.api.NasaResponse.nasaResponseCodec
 import org.http4s.{Request, Response, Status, Uri}
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.client.Client

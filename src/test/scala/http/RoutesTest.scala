@@ -13,7 +13,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import service.AsteroidService
-import model.nasa._
+import model.api._
 import utils.TestData._
 import utils._
 

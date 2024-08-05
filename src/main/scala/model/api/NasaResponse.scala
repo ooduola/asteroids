@@ -1,4 +1,4 @@
-package model.nasa
+package model.api
 
 import io.circe._
 
@@ -14,7 +14,7 @@ case class NasaResponse(
                        )
 
 object NasaResponse {
-  import model.nasa.Asteroid._
+  import model.api.Asteroid._
 
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
@@ -25,21 +25,17 @@ object NasaResponse {
       Either.catchNonFatal(LocalDate.parse(str, dateFormatter)).leftMap(_.getMessage)
     }
 
-  // Custom decoder for Map[LocalDate, List[Asteroid]]
-  implicit val mapDecoder: Decoder[Map[LocalDate, List[Asteroid]]] = new Decoder[Map[LocalDate, List[Asteroid]]] {
-    final def apply(c: HCursor): Decoder.Result[Map[LocalDate, List[Asteroid]]] =
-      c.keys match {
-        case Some(keys) =>
-          val result = keys.toList.foldLeft[Decoder.Result[Map[LocalDate, List[Asteroid]]]](Right(Map.empty)) {
-            case (Right(acc), key) =>
-              c.downField(key).as[List[Asteroid]].map { value =>
-                acc + (LocalDate.parse(key, dateFormatter) -> value)
-              }
-            case (left @ Left(_), _) => left
+  implicit val mapDecoder: Decoder[Map[LocalDate, List[Asteroid]]] = (c: HCursor) => c.keys match {
+    case Some(keys) =>
+      val result = keys.toList.foldLeft[Decoder.Result[Map[LocalDate, List[Asteroid]]]](Right(Map.empty)) {
+        case (Right(acc), key) =>
+          c.downField(key).as[List[Asteroid]].map { value =>
+            acc + (LocalDate.parse(key, dateFormatter) -> value)
           }
-          result
-        case None => Right(Map.empty)
+        case (left@Left(_), _) => left
       }
+      result
+    case None => Right(Map.empty)
   }
 
   implicit val customConfiguration: Configuration = Configuration.default.withSnakeCaseMemberNames

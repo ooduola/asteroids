@@ -5,7 +5,7 @@ import com.comcast.ip4s._
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import config.{AppConfig, ConfigLoader}
 import http.Routes
-import model.nasa._
+import model.api._
 import org.http4s.client.Client
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder

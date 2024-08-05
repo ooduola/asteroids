@@ -1,4 +1,4 @@
-package model.nasa
+package model.api
 
 import io.circe._
 import io.circe.generic.extras.Configuration

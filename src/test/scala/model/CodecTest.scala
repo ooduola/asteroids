@@ -4,9 +4,9 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import utils.TestData.{asteroidDetail, nasaResponse}
 import io.circe.parser._
-import model.nasa.NasaResponse
-import model.nasa.AsteroidDetail
-import model.nasa.NasaResponse._
+import model.api.NasaResponse
+import model.api.AsteroidDetail
+import model.api.NasaResponse._
 
 
 import scala.io.Source
