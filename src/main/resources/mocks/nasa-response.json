@@ -1,0 +1,103 @@
+{
+  "element_count" : 1,
+  "near_earth_objects" : {
+    "2024-08-04" : [
+      {
+        "links" : {
+          "self" : "http://example.com/neo/1"
+        },
+        "id" : "1",
+        "neo_reference_id" : "1",
+        "name" : "Test Asteroid",
+        "nasa_jpl_url" : "http://example.com",
+        "absolute_magnitude_h" : 10.0,
+        "estimated_diameter" : {
+          "kilometers" : {
+            "estimated_diameter_min" : 1.0,
+            "estimated_diameter_max" : 2.0
+          },
+          "meters" : {
+            "estimated_diameter_min" : 1000.0,
+            "estimated_diameter_max" : 2000.0
+          },
+          "miles" : {
+            "estimated_diameter_min" : 0.6,
+            "estimated_diameter_max" : 1.2
+          },
+          "feet" : {
+            "estimated_diameter_min" : 3.3,
+            "estimated_diameter_max" : 6.6
+          }
+        },
+        "is_potentially_hazardous_asteroid" : false,
+        "close_approach_data" : [
+        ],
+        "is_sentry_object" : false
+      },
+      {
+        "links" : {
+          "self" : "http://example.com/neo/1"
+        },
+        "id" : "1",
+        "neo_reference_id" : "1",
+        "name" : "Test Asteroid 2",
+        "nasa_jpl_url" : "http://example.com",
+        "absolute_magnitude_h" : 10.0,
+        "estimated_diameter" : {
+          "kilometers" : {
+            "estimated_diameter_min" : 1.0,
+            "estimated_diameter_max" : 2.0
+          },
+          "meters" : {
+            "estimated_diameter_min" : 1000.0,
+            "estimated_diameter_max" : 2000.0
+          },
+          "miles" : {
+            "estimated_diameter_min" : 0.6,
+            "estimated_diameter_max" : 1.2
+          },
+          "feet" : {
+            "estimated_diameter_min" : 3.3,
+            "estimated_diameter_max" : 6.6
+          }
+        },
+        "is_potentially_hazardous_asteroid" : false,
+        "close_approach_data" : [
+        ],
+        "is_sentry_object" : false
+      },
+      {
+        "links" : {
+          "self" : "http://example.com/neo/1"
+        },
+        "id" : "1",
+        "neo_reference_id" : "1",
+        "name" : "Test Asteroid 3",
+        "nasa_jpl_url" : "http://example.com",
+        "absolute_magnitude_h" : 10.0,
+        "estimated_diameter" : {
+          "kilometers" : {
+            "estimated_diameter_min" : 1.0,
+            "estimated_diameter_max" : 2.0
+          },
+          "meters" : {
+            "estimated_diameter_min" : 1000.0,
+            "estimated_diameter_max" : 2000.0
+          },
+          "miles" : {
+            "estimated_diameter_min" : 0.6,
+            "estimated_diameter_max" : 1.2
+          },
+          "feet" : {
+            "estimated_diameter_min" : 3.3,
+            "estimated_diameter_max" : 6.6
+          }
+        },
+        "is_potentially_hazardous_asteroid" : false,
+        "close_approach_data" : [
+        ],
+        "is_sentry_object" : false
+      }
+    ]
+  }
+}
