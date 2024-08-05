@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import com.github.benmanes.caffeine.cache.Cache
 import config._
+import model.SortBy.Name
 import model._
 import model.nasa.{Asteroid, AsteroidSummary, NasaResponse}
 import org.http4s.Uri
@@ -67,14 +68,19 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
   }
 
   test("sortAsteroids sorts by name") {
-    val result = asteroidService.sortAsteroids(asteroidList, "name").unsafeRunSync()
+    val result = asteroidService.sortAsteroids(asteroidSummaryList, Name).unsafeRunSync()
 
-    result shouldBe Right(asteroidList.sortBy(_.name))
+    result shouldBe Right(asteroidSummaryList.sortBy(_.name))
   }
 
   test("sortAsteroids returns InvalidSortCriteriaError error for invalid sort criteria") {
     val invalidSortCriteria = "id"
-    val result = asteroidService.sortAsteroids(asteroidList, invalidSortCriteria).unsafeRunSync()
+
+    val result = SortBy.fromString("id") match {
+      case Some(sortBy) => asteroidService.sortAsteroids(asteroidSummaryList, sortBy).unsafeRunSync()
+      case None => Left(InvalidSortCriteriaError(s"Sorting criteria $invalidSortCriteria not supported"))
+    }
+
     result shouldBe Left(InvalidSortCriteriaError(s"Sorting criteria $invalidSortCriteria not supported"))
   }
 

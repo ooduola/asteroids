@@ -19,7 +19,6 @@ case class AsteroidSummary(
                           ) extends AsteroidBase
 
 object AsteroidSummary {
-  implicit val asteroidSummaryEncoder: Encoder[AsteroidSummary] = deriveEncoder
   implicit private def config: Configuration = Configuration.default.withSnakeCaseMemberNames
   implicit val asteroidSummaryCodec: Codec.AsObject[AsteroidSummary] = deriveConfiguredCodec
 }

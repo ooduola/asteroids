@@ -7,8 +7,11 @@ import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import model.Error
+import model.{Error, SortBy}
+import model.SortBy.Name
 import model.nasa._
+import model.nasa.AsteroidSummary.asteroidSummaryCodec
+import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import service.AsteroidService
 import utils.DateUtils._
 
@@ -34,7 +37,7 @@ class Routes[F[_] : Concurrent](asteroidService: AsteroidService[F]) extends Htt
 
     case req @ POST -> Root / "sortAsteroids" =>
       for {
-        asteroids <- req.as[List[Asteroid]]
+        asteroids <- req.as[List[AsteroidSummary]]
         sortByParam = extractSortBy(req)
         response <- handleSorting(sortByParam, asteroids)
       } yield response
@@ -49,18 +52,18 @@ class Routes[F[_] : Concurrent](asteroidService: AsteroidService[F]) extends Htt
       case Left(error) => InternalServerError(error.toString)
     }
 
-  private def extractSortBy(req: Request[F]): Option[String] = {
-    req.uri.query.params.get("sortBy")
+  private def extractSortBy(req: Request[F]): Option[SortBy] = {
+    req.uri.query.params.get("sortBy").flatMap(SortBy.fromString)
   }
 
-  private def handleSorting(sortBy: Option[String], asteroids: List[Asteroid]): F[Response[F]] = {
+
+  private def handleSorting(sortBy: Option[SortBy], asteroids: List[AsteroidSummary]): F[Response[F]] = {
     sortBy match {
-      case Some(sortByParam) =>
-        asteroidService.sortAsteroids(asteroids, sortByParam).flatMap {
+      case Some(sort) => asteroidService.sortAsteroids(asteroids, sort).flatMap {
           case Right(sortedAsteroids) => Ok(sortedAsteroids.asJson)
           case Left(error) => InternalServerError(error.toString)
         }
-      case None => BadRequest("The 'sortBy' parameter must be provided")
+      case None => BadRequest("The 'sortBy' parameter must be provided in url path")
     }
   }
 }

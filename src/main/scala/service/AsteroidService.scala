@@ -4,6 +4,7 @@ import cats.effect.Concurrent
 import cats.implicits._
 import com.github.benmanes.caffeine.cache.{Cache, Caffeine}
 import config.{ApiConfig, AppConfig}
+import model.SortBy.Name
 import model._
 import model.nasa._
 import org.http4s.Uri
@@ -16,7 +17,7 @@ trait AsteroidService[F[_]] {
 
   def fetchAsteroidDetail(id: String): F[Either[Error, AsteroidDetail]]
 
-  def sortAsteroids(asteroids: List[Asteroid], sortBy: String): F[Either[InvalidSortCriteriaError, List[Asteroid]]]
+  def sortAsteroids(asteroids: List[AsteroidSummary], sortBy: SortBy): F[Either[InvalidSortCriteriaError, List[AsteroidSummary]]]
 }
 
 class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
@@ -35,9 +36,9 @@ class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
     client.getAsteroidDetail(url) // handle error
   }
 
-  override def sortAsteroids(asteroids: List[Asteroid], sortBy: String): F[Either[InvalidSortCriteriaError, List[Asteroid]]] = {
+  override def sortAsteroids(asteroids: List[AsteroidSummary], sortBy: SortBy): F[Either[InvalidSortCriteriaError, List[AsteroidSummary]]] = {
     val sortedAsteroids = sortBy match {
-      case "name" => Right(asteroids.sortBy(_.name))
+      case Name => Right(asteroids.sortBy(_.name))
       case other => Left(InvalidSortCriteriaError(s"Sorting criteria $other not supported"))
     }
     sortedAsteroids.pure[F]
