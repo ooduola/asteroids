@@ -19,9 +19,9 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
 
   val mockClient: ApiClientImpl[IO] = mock[ApiClientImpl[IO]]
   val mockConfig: ApiConfig = ApiConfig("MOCK_KEY", "https://.mock.gov", "/list", "/detail/")
-  val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
+  implicit val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
 
-  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig, mockCache)
+  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig)
 
   private val baseUrl = mockConfig.baseUrl
   private val listPath = mockConfig.listPath

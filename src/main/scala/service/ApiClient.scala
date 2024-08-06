@@ -16,7 +16,7 @@ trait ApiClient[F[_]] {
   def getAsteroidDetail(url: Uri): F[Either[Error, AsteroidDetail]]
 }
 
-class ApiClientImpl[F[_]: Concurrent](client: Client[F]) extends ApiClient[F] with Http4sClientDsl[F] {
+class ApiClientImpl[F[_]: Concurrent](implicit val client: Client[F]) extends ApiClient[F] with Http4sClientDsl[F] {
 
   override def getAsteroids(url: Uri): F[Either[Error, NasaResponse]] =
     client.run(GET(url)).use(handleResponse[NasaResponse])

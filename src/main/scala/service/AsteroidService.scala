@@ -21,8 +21,7 @@ trait AsteroidService[F[_]] {
 }
 
 class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
-                                             config: ApiConfig,
-                                             cache: Cache[(Option[String], Option[String]), NasaResponse]) extends AsteroidService[F] {
+                                             config: ApiConfig)(implicit cache: Cache[(Option[String], Option[String]), NasaResponse]) extends AsteroidService[F] {
   private val baseUrl = config.baseUrl
 
   override def fetchAsteroidsWithDates(startDate: String, endDate: String): F[Either[Error, List[AsteroidSummary]]] =

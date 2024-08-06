@@ -8,23 +8,21 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import model.{Error, SortBy}
-import model.SortBy.Name
 import model.api._
-import model.api.AsteroidSummary.asteroidSummaryCodec
-import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import service.AsteroidService
 import utils.DateUtils._
 
-class Routes[F[_] : Concurrent](asteroidService: AsteroidService[F]) extends Http4sDsl[F] {
+class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) extends Http4sDsl[F] {
 
   implicit def listAsteroidDecoder: EntityDecoder[F, List[Asteroid]] = jsonOf[F, List[Asteroid]]
+  implicit def asteroidSummaryDecoder: EntityDecoder[F, List[AsteroidSummary]] = jsonOf[F, List[AsteroidSummary]]
 
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    case GET -> Root / "asteroids" =>
+    case GET -> Root =>
       handleResponse(asteroidService.fetchAsteroids())
 
-    case GET -> Root / "asteroids" / startDate / endDate =>
+    case GET -> Root / startDate / endDate =>
       validateDates(startDate, endDate) match {
         case Valid((start, end)) =>
           handleResponse(asteroidService.fetchAsteroidsWithDates(start, end))
@@ -32,10 +30,10 @@ class Routes[F[_] : Concurrent](asteroidService: AsteroidService[F]) extends Htt
           BadRequest(errors.toList.mkString(", "))
       }
 
-    case GET -> Root / "asteroids" / id if id.nonEmpty =>
+    case GET -> Root / id if id.nonEmpty =>
       handleResponse(asteroidService.fetchAsteroidDetail(id))
 
-    case req @ POST -> Root / "sortAsteroids" =>
+    case req @ POST -> Root / "sort" =>
       for {
         asteroids <- req.as[List[AsteroidSummary]]
         sortByParam = extractSortBy(req)
@@ -56,14 +54,13 @@ class Routes[F[_] : Concurrent](asteroidService: AsteroidService[F]) extends Htt
     req.uri.query.params.get("sortBy").flatMap(SortBy.fromString)
   }
 
-
   private def handleSorting(sortBy: Option[SortBy], asteroids: List[AsteroidSummary]): F[Response[F]] = {
     sortBy match {
       case Some(sort) => asteroidService.sortAsteroids(asteroids, sort).flatMap {
-          case Right(sortedAsteroids) => Ok(sortedAsteroids.asJson)
-          case Left(error) => InternalServerError(error.toString)
-        }
-      case None => BadRequest("The 'sortBy' parameter must be provided in url path")
+        case Right(sortedAsteroids) => Ok(sortedAsteroids.asJson)
+        case Left(error) => InternalServerError(error.toString)
+      }
+      case None => BadRequest(s"Invalid 'sortBy' parameter $sortBy in URL path")
     }
   }
 }

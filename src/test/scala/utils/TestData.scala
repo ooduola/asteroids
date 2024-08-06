@@ -86,16 +86,12 @@ object TestData {
     )
   }
 
-
   val asteroidSummary: AsteroidSummary =
     AsteroidSummary(
       id = asteroid.id,
       name = asteroid.name,
       links = asteroid.links
     )
-
-
-
 
   val asteroidDetail: AsteroidDetail = AsteroidDetail(
     links = DetailLink("http://example.com/neo/1/detail"),
