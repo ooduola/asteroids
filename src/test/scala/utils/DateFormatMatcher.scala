@@ -1,9 +1,10 @@
 package utils
 
 import org.mockito.ArgumentMatcher
-import org.mockito.ArgumentMatchers.{any, argThat}
-import java.time.format.DateTimeFormatter
+import org.mockito.ArgumentMatchers.argThat
+
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class DateFormatMatcher(expectedFormat: String) extends ArgumentMatcher[String] {
   private val formatter = DateTimeFormatter.ofPattern(expectedFormat)

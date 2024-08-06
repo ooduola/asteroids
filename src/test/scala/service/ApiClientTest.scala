@@ -4,11 +4,11 @@ import cats.effect.unsafe.implicits.global
 import cats.effect.{IO, Resource}
 import cats.implicits._
 import config.ApiConfig
-import model.{HttpError, ParsingError}
 import model.api.NasaResponse
-import org.http4s.{Request, Response, Status, Uri}
+import model.{HttpError, ParsingError}
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.client.Client
+import org.http4s.{Request, Response, Status, Uri}
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -28,8 +28,8 @@ class ApiClientTest extends AnyFunSuite with Matchers with MockitoSugar with Bef
       s"$baseUrl$listPath?start_date=2024-01-01&end_date=2024-01-31&api_key=${mockConfig.apiKey}"
     )
 
-  implicit val client: Client[IO] = mock[Client[IO]]
-  val apiClient = new ApiClientImpl[IO]
+  private val client: Client[IO] = mock[Client[IO]]
+  val apiClient = new ApiClientImpl[IO](client)
 
   test("getAsteroids returns NasaResponse on successful API call") {
     val mockResponse = Response[IO](status = Status.Ok).withEntity(nasaResponse)

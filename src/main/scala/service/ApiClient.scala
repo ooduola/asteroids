@@ -16,7 +16,7 @@ trait ApiClient[F[_]] {
   def getAsteroidDetail(url: Uri): F[Either[Error, AsteroidDetail]]
 }
 
-class ApiClientImpl[F[_]: Concurrent](implicit val client: Client[F]) extends ApiClient[F] with Http4sClientDsl[F] {
+class ApiClientImpl[F[_]: Concurrent](client: Client[F]) extends ApiClient[F] with Http4sClientDsl[F] {
 
   override def getAsteroids(url: Uri): F[Either[Error, NasaResponse]] =
     client.run(GET(url)).use(handleResponse[NasaResponse])
@@ -37,7 +37,7 @@ class ApiClientImpl[F[_]: Concurrent](implicit val client: Client[F]) extends Ap
     }
 
   private def handleFailure[B](response: Response[F], status: Status): F[Either[Error, B]] =
-    response.bodyText.compile.foldMonoid.map { body =>
+    response.bodyText.compile.string.map { body =>
       val errorMessage = if (body.isEmpty) {
         s"Received unsuccessful status: ${status.code}"
       } else {
@@ -45,15 +45,4 @@ class ApiClientImpl[F[_]: Concurrent](implicit val client: Client[F]) extends Ap
       }
       Left(HttpError(errorMessage))
     }
-
-
-  //  private def handleFailure[B](response: Response[F], status: Status): F[Either[Error, B]] =
-//    response.as[String].map  { body =>
-//      val errorMessage = if (body.isEmpty) {
-//        s"Received unsuccessful status: ${status.code}"
-//      } else {
-//        s"Received unsuccessful status: ${status.code}. Response body: $body"
-//      }
-//      Left(HttpError(errorMessage))
-//    }
 }

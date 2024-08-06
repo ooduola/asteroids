@@ -1,13 +1,11 @@
 package model
 
+import io.circe.parser._
+import model.api.{AsteroidDetail, NasaResponse}
+import model.api.NasaResponse._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import utils.TestData.{asteroidDetail, nasaResponse}
-import io.circe.parser._
-import model.api.NasaResponse
-import model.api.AsteroidDetail
-import model.api.NasaResponse._
-
 
 import scala.io.Source
 

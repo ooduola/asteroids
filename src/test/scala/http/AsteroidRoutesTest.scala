@@ -3,7 +3,7 @@ package http
 import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import model.HttpError
+import model.api._
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.implicits._
@@ -14,7 +14,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import service.AsteroidService
-import model.api._
 import utils.TestData._
 import utils._
 
@@ -66,7 +65,6 @@ class AsteroidRoutesTest extends AnyFunSuite with Matchers with BeforeAndAfterEa
     val response = routes.run(request).unsafeRunSync
 
     response.status shouldBe Status.Ok
-    println(response.body)
 
     val responseBody = response.as[AsteroidDetail].unsafeRunSync()
     responseBody.name shouldBe "Test Asteroid Detail"

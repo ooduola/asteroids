@@ -6,10 +6,10 @@ import com.github.benmanes.caffeine.cache.Cache
 import config._
 import model.SortBy.Name
 import model._
-import model.api.{Asteroid, AsteroidSummary, NasaResponse}
+import model.api.NasaResponse
 import org.http4s.Uri
-import org.mockito.ArgumentMatchersSugar.{any, eq}
-import org.mockito.{ArgumentMatchers, Mockito, MockitoSugar}
+import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.{ArgumentMatchers, MockitoSugar}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
@@ -17,11 +17,11 @@ import utils.TestData._
 
 class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar with BeforeAndAfterEach {
 
-  val mockClient: ApiClientImpl[IO] = mock[ApiClientImpl[IO]]
-  val mockConfig: ApiConfig = ApiConfig("MOCK_KEY", "https://.mock.gov", "/list", "/detail/")
-  implicit val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
+  private val mockClient: ApiClientImpl[IO] = mock[ApiClientImpl[IO]]
+  private val mockConfig: ApiConfig = ApiConfig("MOCK_KEY", "https://.mock.gov", "/list", "/detail/")
+  private val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
 
-  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig)
+  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig, mockCache)
 
   private val baseUrl = mockConfig.baseUrl
   private val listPath = mockConfig.listPath
