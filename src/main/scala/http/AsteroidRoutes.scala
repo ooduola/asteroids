@@ -22,7 +22,7 @@ class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) exte
     case GET -> Root =>
       handleResponse(asteroidService.fetchAsteroids())
 
-    case GET -> Root / startDate / endDate =>
+    case GET -> Root / "dates" /startDate / endDate =>
       validateDates(startDate, endDate) match {
         case Valid((start, end)) =>
           handleResponse(asteroidService.fetchAsteroidsWithDates(start, end))
@@ -30,7 +30,7 @@ class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) exte
           BadRequest(errors.toList.mkString(", "))
       }
 
-    case GET -> Root / id if id.nonEmpty =>
+    case GET -> Root / "details" / id if id.nonEmpty =>
       handleResponse(asteroidService.fetchAsteroidDetail(id))
 
     case req @ POST -> Root / "sort" =>

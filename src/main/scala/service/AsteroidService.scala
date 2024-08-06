@@ -32,7 +32,7 @@ class AsteroidServiceImpl[F[_] : Concurrent](client: ApiClientImpl[F],
 
   override def fetchAsteroidDetail(id: String): F[Either[Error, AsteroidDetail]] = {
     val url = Uri.unsafeFromString(s"$baseUrl${config.detailPath}$id?api_key=${config.apiKey}")
-    client.getAsteroidDetail(url) // handle error
+    client.getAsteroidDetail(url)
   }
 
   override def sortAsteroids(asteroids: List[AsteroidSummary], sortBy: SortBy): F[Either[InvalidSortCriteriaError, List[AsteroidSummary]]] = {
