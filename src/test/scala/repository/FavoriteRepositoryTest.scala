@@ -4,58 +4,37 @@ import cats.effect.unsafe.implicits.global
 import cats.effect.{IO, Resource}
 import doobie._
 import doobie.implicits._
-import model.api.{AsteroidSummary, DetailLink}
 import model.{FavouriteAlreadyExistsError, FavouriteDbError}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+import repository.FavoriteRepositoryImpl
 import utils.TestData.asteroidSummary
 import utils.TransactorUtil.createH2Transactor
 
-import java.sql.SQLException
 import scala.io.Source
 
 class FavoriteRepositoryTest extends AnyFunSuite with Matchers {
 
-  def loadSqlScript(name: String): String = {
-    val source = Source.fromResource(name)
-    try source.mkString finally source.close()
-  }
-
   test("addFavorite should return Right(()) when the asteroid is added successfully") {
     createH2Transactor.use { transactor =>
-      val repository = new FavoriteRepositoryImpl[IO](transactor)
-
-      Fragment.const(loadSqlScript("sql/create_favorites_table.sql"))
-        .update
-        .run
-        .transact(transactor)
-        .flatMap { _ =>
-          repository.addFavorite(asteroidSummary)
-        }.map { result =>
-          result shouldBe Right(())
-        }
+      for {
+        _ <- setupSchema(transactor)
+        result <- new FavoriteRepositoryImpl[IO](transactor).addFavorite(asteroidSummary)
+        _ <- cleanupSchema(transactor)
+      } yield {
+        result shouldBe Right(())
+      }
     }.unsafeRunSync()
   }
 
   test("addFavorite should return Left(FavouriteAlreadyExistsError) when a UNIQUE_VIOLATION error occurs") {
     createH2Transactor.use { transactor =>
-      val repository = new FavoriteRepositoryImpl[IO](transactor)
-
-      val setup = for {
-        _ <-
-          sql"""
-          CREATE TABLE favorites (
-            id VARCHAR PRIMARY KEY,
-            name VARCHAR NOT NULL,
-            links VARCHAR NOT NULL
-          )
-        """.update.run.transact(transactor)
-
-        _ <- repository.addFavorite(asteroidSummary)
-        result <- repository.addFavorite(asteroidSummary)
-      } yield result
-
-      setup.map { result =>
+      for {
+        _ <- setupSchema(transactor)
+        _ <- new FavoriteRepositoryImpl[IO](transactor).addFavorite(asteroidSummary)
+        result <- new FavoriteRepositoryImpl[IO](transactor).addFavorite(asteroidSummary)
+        _ <- cleanupSchema(transactor)
+      } yield {
         result shouldBe Left(FavouriteAlreadyExistsError)
       }
     }.unsafeRunSync()
@@ -63,50 +42,52 @@ class FavoriteRepositoryTest extends AnyFunSuite with Matchers {
 
   test("getListFavorites should return a list of favorites when fetching is successful") {
     createH2Transactor.use { transactor =>
-      val repository = new FavoriteRepositoryImpl[IO](transactor)
-
-      val setup = for {
-        _ <-
-          sql"""
-          CREATE TABLE favorites (
-            id VARCHAR PRIMARY KEY,
-            name VARCHAR NOT NULL,
-            links VARCHAR NOT NULL
-          )
-        """.update.run.transact(transactor)
-
-        _ <- repository.addFavorite(asteroidSummary)
-        result <- repository.getListFavorites
-      } yield result
-
-      setup.map { result =>
+      for {
+        _ <- setupSchema(transactor)
+        _ <- new FavoriteRepositoryImpl[IO](transactor).addFavorite(asteroidSummary)
+        result <- new FavoriteRepositoryImpl[IO](transactor).getListFavorites
+        _ <- cleanupSchema(transactor) // Cleanup after the test
+      } yield {
         result shouldBe List(asteroidSummary)
+      }
+    }.unsafeRunSync()
+  }
+
+  test("getListFavorites should return Left(FavouriteDbError) when no table is present adding to favorites") {
+    createH2Transactor.use { transactor =>
+      for {
+        _ <- runSqlScript(transactor, "sql/create_wrong_table.sql")
+        result <- new FavoriteRepositoryImpl[IO](transactor).addFavorite(asteroidSummary)
+        _ <- cleanupSchema(transactor)
+      } yield {
+        result should matchPattern { case Left(_: FavouriteDbError) => }
       }
     }.unsafeRunSync()
   }
 
   test("getListFavorites should return Left(FavouriteDbError) when an error occurs while fetching") {
     createH2Transactor.use { transactor =>
-      val repository = new FavoriteRepositoryImpl[IO](transactor)
-
-      // Modify the query to induce an error, such as a table not existing
-      val faultySetup = for {
-        _ <-
-          sql"""
-          CREATE TABLE wrong_table (
-            id VARCHAR PRIMARY KEY,
-            name VARCHAR NOT NULL,
-            links VARCHAR NOT NULL
-          )
-        """.update.run.transact(transactor)
-        result <- repository.getListFavorites
-      } yield result
-
-      faultySetup.map { result =>
-        result shouldBe Left(FavouriteDbError(new java.sql.SQLException("Table does not exist")))
+      for {
+        _ <- runSqlScript(transactor, "sql/create_wrong_table.sql")
+        result <- new FavoriteRepositoryImpl[IO](transactor).getListFavorites.attempt
+        _ <- cleanupSchema(transactor)
+      } yield {
+        result should matchPattern { case Left(_: FavouriteDbError) => }
       }
     }.unsafeRunSync()
   }
+
+  private def loadSqlScript(name: String): String = {
+    val source = Source.fromResource(name)
+    try source.mkString finally source.close()
+  }
+
+  private def runSqlScript(transactor: Transactor[IO], scriptName: String): IO[Unit] =
+    Fragment.const(loadSqlScript(scriptName)).update.run.transact(transactor).void
+
+  private def setupSchema(transactor: Transactor[IO]): IO[Unit] =
+    runSqlScript(transactor, "sql/create_favorites_table.sql")
+
+  private def cleanupSchema(transactor: Transactor[IO]): IO[Unit] =
+    runSqlScript(transactor, "sql/drop_all_table.sql")
 }
-
-

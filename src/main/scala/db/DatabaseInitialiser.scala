@@ -2,8 +2,8 @@ package db
 
 import cats.effect._
 import cats.implicits._
-import org.typelevel.log4cats.Logger
 import org.flywaydb.core.Flyway
+import org.typelevel.log4cats.Logger
 
 object DatabaseInitialiser {
 

@@ -1,0 +1,5 @@
+CREATE TABLE favorites (
+   id VARCHAR PRIMARY KEY,
+   name VARCHAR NOT NULL,
+   links VARCHAR NOT NULL
+);
