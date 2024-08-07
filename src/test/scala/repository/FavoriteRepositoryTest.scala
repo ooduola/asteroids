@@ -1,140 +1,112 @@
-//package repository
-//
-//import cats.effect._
-//import com.zaxxer.hikari.HikariConfig
-//import doobie.hikari.HikariTransactor
-//import org.scalatest.matchers.should.Matchers
-//import model.api._
-//import org.h2.jdbcx.JdbcDataSource
-//import org.scalatest.funsuite.AnyFunSuite
-//
-//import scala.concurrent.ExecutionContext
-//
-//
-//class FavoriteRepositoryTest extends AnyFunSuite with Matchers {
-//
-//  object TestTransactor {
-//
-//    def transactor[F[_]: Async]: Resource[F, HikariTransactor[F]] = {
-//      val dataSource = new JdbcDataSource()
-//      dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-//      dataSource.setUser("")
-//      dataSource.setPassword("")
-//
-//      val hikariConfig = new HikariConfig()
-//      hikariConfig.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-//      hikariConfig.setUsername("")
-//      hikariConfig.setPassword("")
-//      hikariConfig.setDriverClassName("org.h2.Driver")
-//
-//      HikariTransactor.fromHikariConfig[F](hikariConfig, ExecutionContext.global)
-//    }
-//  }
-//
-//  test("new test") {
-//    val transactorResource = TestTransactor.transactor[IO]
-//
-//    transactorResource.use { xa =>
-//      val repo = new FavoriteRepositoryImpl[IO](xa)
-//
-//      for {
-//        _ <- repo.addFavorite(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-//        favorites <- repo.getListFavorites
-//      } yield {
-//        favorites should contain(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-//      }
-//    }
-//  }
-//
-//  test("new test 2") {
-//    val transactorResource = TestTransactor.transactor[IO]
-//
-//    transactorResource.use { xa =>
-//      val repo = new FavoriteRepositoryImpl[IO](xa)
-//
-//      for {
-//        _ <- repo.getListFavorites
-//        favorites <- repo.getListFavorites
-//      } yield {
-//        favorites should contain(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-//      }
-//    }
-//  }
-//}
-//
-//
-////class FavoriteRepositoryTest extends AnyFunSuite with Matchers with BeforeAndAfterAll {
-////
-////  object TestTransactor {
-////    def transactor[F[_]: Async]: Resource[F, HikariTransactor[F]] = {
-////      val dataSource = new JdbcDataSource()
-////      dataSource.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-////      dataSource.setUser("")
-////      dataSource.setPassword("")
-////
-////      val hikariConfig = new HikariConfig()
-////      hikariConfig.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-////      hikariConfig.setUsername("")
-////      hikariConfig.setPassword("")
-////      hikariConfig.setDriverClassName("org.h2.Driver")
-////
-////      HikariTransactor.fromHikariConfig[F](hikariConfig, ExecutionContext.global)
-////    }
-////  }
-////
-////  private def setupSchema(xa: HikariTransactor[IO]): IO[Unit] = {
-////    val createSchema = sql"""
-////      CREATE TABLE favorites (
-////        id VARCHAR(255) PRIMARY KEY,
-////        name VARCHAR(255),
-////        link VARCHAR(255)
-////      )
-////    """.update.run
-////    createSchema.transact(xa).void
-////  }
-////
-////  private def clearSchema(xa: HikariTransactor[IO]): IO[Unit] = {
-////    val dropSchema = sql"DROP TABLE IF EXISTS favorites".update.run
-////    dropSchema.transact(xa).void
-////  }
-////
-////  override def beforeAll(): Unit = {
-////    super.beforeAll()
-////    TestTransactor.transactor[IO].use { xa =>
-////      setupSchema(xa)
-////    }.unsafeRunSync()
-////  }
-////
-////  override def afterAll(): Unit = {
-////    super.afterAll()
-////    TestTransactor.transactor[IO].use { xa =>
-////      clearSchema(xa)
-////    }.unsafeRunSync()
-////  }
-////
-////  test("new test") {
-////    TestTransactor.transactor[IO].use { xa =>
-////      val repo = new FavoriteRepositoryImpl[IO](xa)
-////
-////      for {
-////        _ <- repo.addFavorite(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-////        favorites <- repo.getListFavorites
-////      } yield {
-////        favorites should contain(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-////      }
-////    }.unsafeRunSync()
-////  }
-////
-////  test("new test 2") {
-////    TestTransactor.transactor[IO].use { xa =>
-////      val repo = new FavoriteRepositoryImpl[IO](xa)
-////
-////      for {
-////        _ <- repo.addFavorite(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-////        favorites <- repo.getListFavorites
-////      } yield {
-////        favorites should contain(AsteroidSummary("1", "Asteroid 1", DetailLink("d")))
-////      }
-////    }.unsafeRunSync()
-////  }
-////}
+package repository
+
+import cats.effect.unsafe.implicits.global
+import cats.effect.{IO, Resource}
+import doobie._
+import doobie.implicits._
+import model.api.{AsteroidSummary, DetailLink}
+import model.{FavouriteAlreadyExistsError, FavouriteDbError}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
+import utils.TestData.asteroidSummary
+import utils.TransactorUtil.createH2Transactor
+
+import java.sql.SQLException
+import scala.io.Source
+
+class FavoriteRepositoryTest extends AnyFunSuite with Matchers {
+
+  def loadSqlScript(name: String): String = {
+    val source = Source.fromResource(name)
+    try source.mkString finally source.close()
+  }
+
+  test("addFavorite should return Right(()) when the asteroid is added successfully") {
+    createH2Transactor.use { transactor =>
+      val repository = new FavoriteRepositoryImpl[IO](transactor)
+
+      Fragment.const(loadSqlScript("sql/create_favorites_table.sql"))
+        .update
+        .run
+        .transact(transactor)
+        .flatMap { _ =>
+          repository.addFavorite(asteroidSummary)
+        }.map { result =>
+          result shouldBe Right(())
+        }
+    }.unsafeRunSync()
+  }
+
+  test("addFavorite should return Left(FavouriteAlreadyExistsError) when a UNIQUE_VIOLATION error occurs") {
+    createH2Transactor.use { transactor =>
+      val repository = new FavoriteRepositoryImpl[IO](transactor)
+
+      val setup = for {
+        _ <-
+          sql"""
+          CREATE TABLE favorites (
+            id VARCHAR PRIMARY KEY,
+            name VARCHAR NOT NULL,
+            links VARCHAR NOT NULL
+          )
+        """.update.run.transact(transactor)
+
+        _ <- repository.addFavorite(asteroidSummary)
+        result <- repository.addFavorite(asteroidSummary)
+      } yield result
+
+      setup.map { result =>
+        result shouldBe Left(FavouriteAlreadyExistsError)
+      }
+    }.unsafeRunSync()
+  }
+
+  test("getListFavorites should return a list of favorites when fetching is successful") {
+    createH2Transactor.use { transactor =>
+      val repository = new FavoriteRepositoryImpl[IO](transactor)
+
+      val setup = for {
+        _ <-
+          sql"""
+          CREATE TABLE favorites (
+            id VARCHAR PRIMARY KEY,
+            name VARCHAR NOT NULL,
+            links VARCHAR NOT NULL
+          )
+        """.update.run.transact(transactor)
+
+        _ <- repository.addFavorite(asteroidSummary)
+        result <- repository.getListFavorites
+      } yield result
+
+      setup.map { result =>
+        result shouldBe List(asteroidSummary)
+      }
+    }.unsafeRunSync()
+  }
+
+  test("getListFavorites should return Left(FavouriteDbError) when an error occurs while fetching") {
+    createH2Transactor.use { transactor =>
+      val repository = new FavoriteRepositoryImpl[IO](transactor)
+
+      // Modify the query to induce an error, such as a table not existing
+      val faultySetup = for {
+        _ <-
+          sql"""
+          CREATE TABLE wrong_table (
+            id VARCHAR PRIMARY KEY,
+            name VARCHAR NOT NULL,
+            links VARCHAR NOT NULL
+          )
+        """.update.run.transact(transactor)
+        result <- repository.getListFavorites
+      } yield result
+
+      faultySetup.map { result =>
+        result shouldBe Left(FavouriteDbError(new java.sql.SQLException("Table does not exist")))
+      }
+    }.unsafeRunSync()
+  }
+}
+
+
