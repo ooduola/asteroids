@@ -6,7 +6,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import config._
 import model.SortBy.Name
 import model._
-import model.api.NasaResponse
+import model.api.{AsteroidDetail, AsteroidSummary, NasaResponse}
 import org.http4s.Uri
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.{ArgumentMatchers, MockitoSugar}
@@ -15,13 +15,18 @@ import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import utils.TestData._
 
+import java.time.LocalDate
+
 class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar with BeforeAndAfterEach {
 
   private val mockClient: ApiClientImpl[IO] = mock[ApiClientImpl[IO]]
   private val mockConfig: ApiConfig = ApiConfig("MOCK_KEY", "https://.mock.gov", "/list", "/detail/")
-  private val mockCache: Cache[(Option[String], Option[String]), NasaResponse] = mock[Cache[(Option[String], Option[String]), NasaResponse]]
+  private val mockAsteroidCache = mock[Cache[(Option[LocalDate], Option[LocalDate]), List[AsteroidSummary]]]
+  private val mockSummaryCache = mock[Cache[String, AsteroidDetail]]
+  private val startDate = LocalDate.parse("2023-01-01")
+  private val endDate = LocalDate.parse("2023-01-02")
 
-  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig, mockCache)
+  val asteroidService = new AsteroidServiceImpl[IO](mockClient, mockConfig, mockSummaryCache, mockAsteroidCache)
 
   private val baseUrl = mockConfig.baseUrl
   private val listPath = mockConfig.listPath
@@ -30,31 +35,21 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockClient, mockCache)
+    reset(mockClient, mockAsteroidCache, mockSummaryCache)
   }
 
   test("fetchAsteroidsWithDates returns expected result") {
     when(mockClient.getAsteroids(any[Uri])).thenReturn(IO.pure(Right(nasaResponse)))
 
-    val result = asteroidService.fetchAsteroidsWithDates("2024-01-01", "2024-01-31").unsafeRunSync()
+    val result = asteroidService.fetchAsteroidsWithDates(startDate, endDate).unsafeRunSync()
     val expectedUri: Uri =
       Uri.unsafeFromString(
-        s"$baseUrl$listPath?start_date=2024-01-01&end_date=2024-01-31&api_key=${mockConfig.apiKey}"
+        s"$baseUrl$listPath?start_date=2023-01-01&end_date=2023-01-02&api_key=${mockConfig.apiKey}"
       )
 
     result shouldBe Right(asteroidSummaryList)
     verify(mockClient).getAsteroids(ArgumentMatchers.eq(expectedUri))
 }
-
-  test("fetchAsteroids returns expected result") {
-    when(mockClient.getAsteroids(any[Uri])).thenReturn(IO.pure(Right(nasaResponseTwo)))
-
-    val result = asteroidService.fetchAsteroids().unsafeRunSync()
-    val expectedUri: Uri = Uri.unsafeFromString(s"$baseUrl$listPath?api_key=${mockConfig.apiKey}")
-
-    result shouldBe Right(List(asteroidSummary))
-    verify(mockClient).getAsteroids(ArgumentMatchers.eq(expectedUri))
-  }
 
   test("fetchAsteroidDetail returns expected result") {
     when(mockClient.getAsteroidDetail(any[Uri])).thenReturn(IO.pure(Right(asteroidDetail)))
@@ -87,15 +82,7 @@ class AsteroidServiceTest extends AnyFunSuite with Matchers with MockitoSugar wi
   test("fetchAsteroidsWithDates handles error response") {
     when(mockClient.getAsteroids(any[Uri])).thenReturn(IO.pure(Left(HttpError("Error fetching data"))))
 
-    val result = asteroidService.fetchAsteroidsWithDates("2024-01-01", "2024-01-31").unsafeRunSync()
-
-    result shouldBe Left(HttpError("Error fetching data"))
-  }
-
-  test("fetchAsteroids handles error response") {
-    when(mockClient.getAsteroids(any[Uri])).thenReturn(IO.pure(Left(HttpError("Error fetching data"))))
-
-    val result = asteroidService.fetchAsteroids().unsafeRunSync()
+    val result = asteroidService.fetchAsteroidsWithDates(startDate, endDate).unsafeRunSync()
 
     result shouldBe Left(HttpError("Error fetching data"))
   }

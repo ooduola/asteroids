@@ -11,6 +11,7 @@ import org.typelevel.log4cats.Logger
 import repository.FavoriteRepositoryImpl
 import service._
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object AppResources {
@@ -19,24 +20,33 @@ object AppResources {
     for {
       _ <- Resource.eval(logger.info("Starting application resource initialization"))
       client <- httpClientResource[F]
-      cache <- cacheResource[F]
+      summaryListCache <- summaryCacheResource[F]
+      asteroidCache <- asteroidCacheResource[F]
       config <- Resource.eval(ConfigLoader.loadConfig[F])
       _ <- Resource.eval(DatabaseInitialiser.migrate[F](config.db.url, config.db.user, config.db.password))
       transactor <- DatabaseConfig.transactor[F](config.db)
       favoriteRepository = new FavoriteRepositoryImpl[F](transactor)
       favoriteService = new FavoriteServiceImpl[F](favoriteRepository)
       nasaClient = new ApiClientImpl[F](client)
-      asteroidService = new AsteroidServiceImpl[F](nasaClient, config.api, cache)
+      asteroidService = new AsteroidServiceImpl[F](nasaClient, config.api, asteroidCache, summaryListCache)
 
       _ <- Resource.eval(logger.info("Application resources initialized successfully"))
     } yield (asteroidService, favoriteService, config.server)
   }
 
-  private def cacheResource[F[_]: Async]: Resource[F, Cache[(Option[String], Option[String]), NasaResponse]] = {
+  private def asteroidCacheResource[F[_]: Async]: Resource[F, Cache[String, AsteroidDetail]] = {
     Resource.pure {
       Caffeine.newBuilder()
         .maximumSize(100)
-        .build[(Option[String], Option[String]), NasaResponse]()
+        .build[String, AsteroidDetail]()
+    }
+  }
+
+  private def summaryCacheResource[F[_]: Async]: Resource[F, Cache[(Option[LocalDate], Option[LocalDate]), List[AsteroidSummary]]] = {
+    Resource.pure {
+      Caffeine.newBuilder()
+        .maximumSize(100)
+        .build[(Option[LocalDate], Option[LocalDate]), List[AsteroidSummary]]()
     }
   }
 

@@ -12,6 +12,8 @@ import model.api._
 import service.AsteroidService
 import utils.DateUtils._
 
+import java.time.LocalDate
+
 class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) extends Http4sDsl[F] {
 
   implicit def listAsteroidDecoder: EntityDecoder[F, List[Asteroid]] = jsonOf[F, List[Asteroid]]
@@ -19,10 +21,12 @@ class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) exte
 
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    case GET -> Root =>
-      handleResponse(asteroidService.fetchAsteroids())
+    case GET -> Root / "dates" =>
+      val defaultStartDate = LocalDate.now()
+      val defaultEndDate = LocalDate.now().plusDays(7)
+      handleResponse(asteroidService.fetchAsteroidsWithDates(defaultStartDate, defaultEndDate))
 
-    case GET -> Root / "dates" /startDate / endDate =>
+    case GET -> Root / "dates" / startDate / endDate =>
       validateDates(startDate, endDate) match {
         case Valid((start, end)) =>
           handleResponse(asteroidService.fetchAsteroidsWithDates(start, end))

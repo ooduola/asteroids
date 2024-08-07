@@ -17,35 +17,24 @@ import service.AsteroidService
 import utils.TestData._
 import utils._
 
+import java.time.LocalDate
+
 class AsteroidRoutesTest extends AnyFunSuite with Matchers with BeforeAndAfterEach {
 
   val mockAsteroidService: AsteroidService[IO] = mock[AsteroidService[IO]]
   val routes: Kleisli[IO, Request[IO], Response[IO]] = new AsteroidRoutes[IO](mockAsteroidService).routes.orNotFound
+  private val startDate = LocalDate.parse("2023-01-01")
+  private val endDate = LocalDate.parse("2023-01-02")
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAsteroidService)
   }
 
-  test("GET /asteroids returns status 200 and list of asteroids") {
-    when(mockAsteroidService.fetchAsteroids())
-      .thenReturn(IO.pure(Right(List(asteroidSummary))))
-
-    val request = Request[IO](Method.GET, uri"/")
-    val response = routes.run(request).unsafeRunSync
-    val responseBody = response.as[List[AsteroidSummary]].unsafeRunSync()
-
-    response.status shouldBe Status.Ok
-    responseBody.length shouldBe 1
-    responseBody.head.name shouldBe "Test Asteroid"
-    verify(mockAsteroidService).fetchAsteroids()
-  }
-
   test("GET with valid dates should status 200 and list of asteroids") {
-    when(mockAsteroidService.fetchAsteroidsWithDates(
-      argThat(new DateFormatMatcher("yyyy-MM-dd")),
-      argThat(new DateFormatMatcher("yyyy-MM-dd"))
-    )).thenReturn(IO.pure(Right(asteroidSummaryList)))
+
+    when(mockAsteroidService.fetchAsteroidsWithDates(startDate, endDate))
+      .thenReturn(IO.pure(Right(asteroidSummaryList)))
 
     val request = Request[IO](Method.GET, uri"/dates/2023-01-01/2023-01-02")
     val response = routes.run(request).unsafeRunSync
@@ -54,7 +43,7 @@ class AsteroidRoutesTest extends AnyFunSuite with Matchers with BeforeAndAfterEa
     response.status shouldBe Status.Ok
     responseBody.length shouldBe asteroidList.length
     responseBody.head.name shouldBe "Test Asteroid"
-    verify(mockAsteroidService).fetchAsteroidsWithDates("2023-01-01", "2023-01-02")
+    verify(mockAsteroidService).fetchAsteroidsWithDates(startDate, endDate)
   }
 
   test("GET /:id with valid ID should return asteroid details") {
