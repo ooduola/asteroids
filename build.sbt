@@ -1,7 +1,6 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.14"
 
-
 val catsCore = "2.12.0"
 val catsEffect = "3.5.0"
 val http4s = "0.23.27"
@@ -21,7 +20,6 @@ val scalatest = "3.2.19"
 val scalaMock = "6.0.0"
 val mockitoScala = "1.17.37"
 val scalatestPlusMockito = "3.2.19.0"
-
 
 // Project settings
 lazy val root = (project in file("."))
@@ -75,6 +73,11 @@ lazy val root = (project in file("."))
       "org.mockito" %% "mockito-scala" % mockitoScala % Test,
       "org.scalatestplus" %% "mockito-5-12" % scalatestPlusMockito % Test,
       "org.scalamock" %% "scalamock" % scalaMock % Test,
-      "com.h2database" % "h2" % "2.3.230" % Test
+      "com.h2database" % "h2" % "2.3.230" % Test,
+      "org.testcontainers" % "postgresql" % "1.20.0" % Test,
+
+      // SLF4J Libraries
+      "org.slf4j" % "slf4j-api" % "2.0.12",
+      "org.slf4j" % "slf4j-simple" % "2.0.13"
     )
   )
