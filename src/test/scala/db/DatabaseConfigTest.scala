@@ -1,3 +1,5 @@
+package db
+
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 import com.zaxxer.hikari.HikariConfig
@@ -6,7 +8,6 @@ import db.DatabaseConfig
 import doobie.hikari.HikariTransactor
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
 
 import scala.concurrent.ExecutionContext
 

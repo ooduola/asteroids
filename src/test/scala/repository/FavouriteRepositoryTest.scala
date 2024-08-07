@@ -46,7 +46,7 @@ class FavouriteRepositoryTest extends AnyFunSuite with Matchers {
         _ <- setupSchema(transactor)
         _ <- new FavouriteRepositoryImpl[IO](transactor).addFavourite(asteroidSummary)
         result <- new FavouriteRepositoryImpl[IO](transactor).getListFavourites
-        _ <- cleanupSchema(transactor) // Cleanup after the test
+        _ <- cleanupSchema(transactor)
       } yield {
         result shouldBe List(asteroidSummary)
       }
