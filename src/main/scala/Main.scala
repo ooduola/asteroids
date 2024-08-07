@@ -11,8 +11,8 @@ object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = {
     AppResources.build[IO].use {
-      case (asteroidService, favoriteService, serverConfig) =>
-        startServer(asteroidService, favoriteService, serverConfig).handleErrorWith { e =>
+      case (asteroidService, favouriteService, serverConfig) =>
+        startServer(asteroidService, favouriteService, serverConfig).handleErrorWith { e =>
           logger.error(e)("Server failed") *> IO.pure(ExitCode.Error)
         }
     }.handleErrorWith { e =>

@@ -10,16 +10,16 @@ import model.api.AsteroidSummary
 
 import java.sql.SQLException
 
-trait FavoriteRepository[F[_]] {
-  def addFavorite(asteroid: AsteroidSummary): F[Either[DbError, Unit]]
-  def getListFavorites: F[List[AsteroidSummary]]
+trait FavouriteRepository[F[_]] {
+  def addFavourite(asteroid: AsteroidSummary): F[Either[DbError, Unit]]
+  def getListFavourites: F[List[AsteroidSummary]]
 }
 
-class FavoriteRepositoryImpl[F[_]: Async](transactor: Transactor[F]) extends FavoriteRepository[F] {
+class FavouriteRepositoryImpl[F[_]: Async](transactor: Transactor[F]) extends FavouriteRepository[F] {
 
-  override def addFavorite(asteroid: AsteroidSummary): F[Either[DbError, Unit]] = {
-    FavoriteRepository
-      .addFavoriteQuery(asteroid)
+  override def addFavourite(asteroid: AsteroidSummary): F[Either[DbError, Unit]] = {
+    FavouriteRepository
+      .addFavouriteQuery(asteroid)
       .run
       .transact(transactor)
       .attemptSql
@@ -32,9 +32,9 @@ class FavoriteRepositoryImpl[F[_]: Async](transactor: Transactor[F]) extends Fav
       }
   }
 
-  override def getListFavorites: F[List[AsteroidSummary]] = {
-    FavoriteRepository
-      .getListFavoritesQuery
+  override def getListFavourites: F[List[AsteroidSummary]] = {
+    FavouriteRepository
+      .getListFavouritesQuery
       .to[List]
       .transact(transactor)
       .adaptError { case sqlException: SQLException =>
@@ -43,16 +43,16 @@ class FavoriteRepositoryImpl[F[_]: Async](transactor: Transactor[F]) extends Fav
   }
 }
 
-object FavoriteRepository {
+object FavouriteRepository {
 
-  def addFavoriteQuery(asteroid: AsteroidSummary): Update0 =
+  def addFavouriteQuery(asteroid: AsteroidSummary): Update0 =
     sql"""
-      INSERT INTO favorites (id, name, links) VALUES (${asteroid.id}, ${asteroid.name}, ${asteroid.links})
+      INSERT INTO favourites (id, name, links) VALUES (${asteroid.id}, ${asteroid.name}, ${asteroid.links})
     """.update
 
-  def getListFavoritesQuery: Query0[AsteroidSummary] =
+  def getListFavouritesQuery: Query0[AsteroidSummary] =
     sql"""
-      SELECT id, name, links FROM favorites
+      SELECT id, name, links FROM favourites
     """.query[AsteroidSummary]
 
 }

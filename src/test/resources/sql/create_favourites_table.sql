@@ -1,4 +1,4 @@
-CREATE TABLE favorites (
+CREATE TABLE favourites (
    id VARCHAR PRIMARY KEY,
    name VARCHAR NOT NULL,
    links VARCHAR NOT NULL

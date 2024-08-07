@@ -2,7 +2,7 @@ package service
 
 import cats.effect.{ExitCode, IO}
 import config.ServerConfig
-import http.{AsteroidRoutes, FavoriteRoutes}
+import http.{AsteroidRoutes, FavouriteRoutes}
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
@@ -10,15 +10,15 @@ import org.typelevel.log4cats.Logger
 object ServerInitialiser {
 
   def startServer(asteroidService: AsteroidService[IO],
-                          favoriteService: FavoriteService[IO],
-                          config: ServerConfig)(implicit logger: Logger[IO]): IO[ExitCode] = {
+                  favouriteService: FavouriteService[IO],
+                  config: ServerConfig)(implicit logger: Logger[IO]): IO[ExitCode] = {
 
     val asteroidRoutes = new AsteroidRoutes[IO](asteroidService).routes
-    val favoriteRoutes = new FavoriteRoutes[IO](favoriteService).routes
+    val favouriteRoutes = new FavouriteRoutes[IO](favouriteService).routes
 
     val routes = Router(
       "/asteroids" -> asteroidRoutes,
-      "/favorites" -> favoriteRoutes
+      "/favourites" -> favouriteRoutes
     ).orNotFound
 
     EmberServerBuilder

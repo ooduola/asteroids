@@ -9,9 +9,9 @@ import org.http4s.circe.jsonOf
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityDecoder, HttpRoutes, Response}
 import org.typelevel.log4cats.Logger
-import service.FavoriteService
+import service.FavouriteService
 
-class FavoriteRoutes[F[_]: Concurrent](favoriteService: FavoriteService[F])(implicit logger: Logger[F]) extends Http4sDsl[F] {
+class FavouriteRoutes[F[_]: Concurrent](favouriteService: FavouriteService[F])(implicit logger: Logger[F]) extends Http4sDsl[F] {
 
   implicit def asteroidSummaryDecoder: EntityDecoder[F, AsteroidSummary] = jsonOf[F, AsteroidSummary]
 
@@ -30,24 +30,24 @@ class FavoriteRoutes[F[_]: Concurrent](favoriteService: FavoriteService[F])(impl
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "add" =>
       req.as[AsteroidSummary].flatMap { asteroid =>
-        favoriteService.addFavorite(asteroid).flatMap {
+        favouriteService.addFavourite(asteroid).flatMap {
           case Right(_) =>
-            logger.info(s"Asteroid ${asteroid.id} added to favorites") *>
-              Ok(s"Asteroid ${asteroid.id} added to favorites")
+            logger.info(s"Asteroid ${asteroid.id} added to favourites") *>
+              Ok(s"Asteroid ${asteroid.id} added to favourites")
           case Left(error) => errorResponse(error)
         }
       }
 
     case GET -> Root / "list" =>
-      favoriteService.fetchFavorites().flatMap {
-        case Right(favorites) =>
-          logger.info("Fetched favorites successfully") *>
-            Ok(favorites)
+      favouriteService.fetchFavourites().flatMap {
+        case Right(favourites) =>
+          logger.info("Fetched favourites successfully") *>
+            Ok(favourites)
         case Left(error: FavouriteDbError) =>
-          logger.error(error)("Failed to fetch favorites") *>
-            InternalServerError(s"Failed to fetch favorites: ${error.message}")
+          logger.error(error)("Failed to fetch favourites") *>
+            InternalServerError(s"Failed to fetch favourites: ${error.message}")
         case Left(other) =>
-          logger.error(s"Failed to fetch favorites: ${other.message}") *>
+          logger.error(s"Failed to fetch favourites: ${other.message}") *>
             InternalServerError("An unexpected error occurred")
       }
   }
