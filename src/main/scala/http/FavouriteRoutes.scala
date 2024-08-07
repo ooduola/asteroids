@@ -50,5 +50,8 @@ class FavouriteRoutes[F[_]: Concurrent](favouriteService: FavouriteService[F])(i
           logger.error(s"Failed to fetch favourites: ${other.message}") *>
             InternalServerError("An unexpected error occurred")
       }
+
+    case req =>
+      NotFound(s"Resource not found for path: ${req.uri}")
   }
 }

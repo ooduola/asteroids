@@ -7,5 +7,7 @@ sealed abstract class DbError(val message: String, cause: Option[Throwable] = No
 
 case object FavouriteAlreadyExistsError extends DbError("Asteroid with same id already exists")
 
+case object NoFavouritesExistsError extends DbError("No favourites exists")
+
 case class FavouriteDbError(sqlException: SQLException)
   extends DbError(s"Error occurred when accessing database: ${sqlException.getMessage}", Some(sqlException))

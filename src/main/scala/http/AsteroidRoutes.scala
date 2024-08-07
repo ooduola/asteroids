@@ -64,7 +64,7 @@ class AsteroidRoutes[F[_]: Concurrent](asteroidService: AsteroidService[F]) exte
         case Right(sortedAsteroids) => Ok(sortedAsteroids.asJson)
         case Left(error) => InternalServerError(error.toString)
       }
-      case None => BadRequest(s"Invalid 'sortBy' parameter $sortBy in URL path")
+      case None => BadRequest(s"Invalid 'sortBy' parameter in URL path")
     }
   }
 }

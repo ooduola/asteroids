@@ -7,6 +7,7 @@ import doobie.implicits._
 import doobie.postgres.sqlstate.class23.UNIQUE_VIOLATION
 import model.{DbError, FavouriteAlreadyExistsError, FavouriteDbError}
 import model.api.AsteroidSummary
+import org.typelevel.log4cats.Logger
 
 import java.sql.SQLException
 
@@ -47,8 +48,9 @@ object FavouriteRepository {
 
   def addFavouriteQuery(asteroid: AsteroidSummary): Update0 =
     sql"""
-      INSERT INTO favourites (id, name, links) VALUES (${asteroid.id}, ${asteroid.name}, ${asteroid.links})
-    """.update
+    INSERT INTO favourites (id, name, links)
+    VALUES (${asteroid.id}, ${asteroid.name}, ${asteroid.links})
+  """.update
 
   def getListFavouritesQuery: Query0[AsteroidSummary] =
     sql"""
