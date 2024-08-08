@@ -10,7 +10,7 @@ object TransactorUtil {
       IO.delay {
         Transactor.fromDriverManager[IO](
           "org.h2.Driver",
-          "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+          "jdbc:h2:mem:test-2;DB_CLOSE_DELAY=-1",
           "sa",
           ""
         )

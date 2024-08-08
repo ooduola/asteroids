@@ -1,19 +1,22 @@
 package repository
 
+import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import cats.effect.{IO, Resource}
+import config.DbConfig
 import doobie._
 import doobie.implicits._
 import model.{FavouriteAlreadyExistsError, FavouriteDbError}
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import repository.FavouriteRepositoryImpl
 import utils.TestData.asteroidSummary
+import utils.TransactorUtil
 import utils.TransactorUtil.createH2Transactor
 
 import scala.io.Source
 
 class FavouriteRepositoryTest extends AnyFunSuite with Matchers {
+
+  import doobie.implicits._
 
   test("addFavourite should return Right(()) when the asteroid is added successfully") {
     createH2Transactor.use { transactor =>
